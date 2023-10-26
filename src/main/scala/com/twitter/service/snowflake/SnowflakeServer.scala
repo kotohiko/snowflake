@@ -25,29 +25,33 @@ import com.twitter.logging.config.LoggerConfig
 case class Peer(hostname: String, port: Int)
 
 object SnowflakeServer {
-   def main(args: Array[String]) {
-     val runtime = RuntimeEnvironment(this, args)
-     val server = runtime.loadRuntimeConfig[SnowflakeServer]()
-     try {
-       server.start
-     } catch {
-       case e: Exception =>
-         e.printStackTrace()
-         println(e, "Unexpected exception: %s", e.getMessage)
-         System.exit(0)
-     }
-   }
+  def main(args: Array[String]) {
+    val runtime = RuntimeEnvironment(this, args)
+    val server = runtime.loadRuntimeConfig[SnowflakeServer]()
+    try {
+      server.start
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        println(e, "Unexpected exception: %s", e.getMessage)
+        System.exit(0)
+    }
+  }
 }
 
 class SnowflakeServer(serverPort: Int, datacenterId: Int, workerId: Int, workerIdZkPath: String,
-    skipSanityChecks: Boolean, startupSleepMs: Int, thriftServerThreads: Int,
-    reporter: Reporter, zkClient: ZooKeeperClient) extends Service {
+                      skipSanityChecks: Boolean, startupSleepMs: Int, thriftServerThreads: Int,
+                      reporter: Reporter, zkClient: ZooKeeperClient) extends Service {
 
   private[this] val log = Logger.get
   var server: TServer = null
 
-  Stats.addGauge("datacenter_id") { datacenterId }
-  Stats.addGauge("worker_id") { workerId }
+  Stats.addGauge("datacenter_id") {
+    datacenterId
+  }
+  Stats.addGauge("worker_id") {
+    workerId
+  }
 
   def shutdown(): Unit = {
     if (server != null) {
@@ -86,7 +90,7 @@ class SnowflakeServer(serverPort: Int, datacenterId: Int, workerId: Int, workerI
     }
   }
 
-  def registerWorkerId(i: Int):Unit = {
+  def registerWorkerId(i: Int): Unit = {
     log.info("trying to claim workerId %d", i)
     var tries = 0
     while (true) {
@@ -133,7 +137,7 @@ class SnowflakeServer(serverPort: Int, datacenterId: Int, workerId: Int, workerI
 
   def sanityCheckPeers() {
     var peerCount = 0
-    val timestamps = peers().filter{ case (id: Int, peer: Peer) =>
+    val timestamps = peers().filter { case (id: Int, peer: Peer) =>
       !(peer.hostname == getHostname && peer.port == serverPort)
     }.map { case (id: Int, peer: Peer) =>
       try {
@@ -166,7 +170,7 @@ class SnowflakeServer(serverPort: Int, datacenterId: Int, workerId: Int, workerI
       val avg = timestamps.foldLeft(0L)(_ + _) / peerCount
       if (math.abs(System.currentTimeMillis - avg) > 10000) {
         log.error("Timestamp sanity check failed. Mean timestamp is %d, but mine is %d, " +
-                  "so I'm more than 10s away from the mean", avg, System.currentTimeMillis)
+          "so I'm more than 10s away from the mean", avg, System.currentTimeMillis)
         throw new IllegalStateException("timestamp sanity check failed")
       }
     }

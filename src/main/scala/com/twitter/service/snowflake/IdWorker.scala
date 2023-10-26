@@ -1,4 +1,4 @@
-/** Copyright 2010-2012 Twitter, Inc.*/
+/** Copyright 2010-2012 Twitter, Inc. */
 package com.twitter.service.snowflake
 
 import com.twitter.ostrich.stats.Stats
@@ -13,11 +13,12 @@ import com.twitter.logging.Logger
  * per process
  */
 class IdWorker(val workerId: Long, val datacenterId: Long, private val reporter: Reporter, var sequence: Long = 0L)
-extends Snowflake.Iface {
+  extends Snowflake.Iface {
   private[this] def genCounter(agent: String) = {
     Stats.incr("ids_generated")
     Stats.incr("ids_generated_%s".format(agent))
   }
+
   private[this] val exceptionCounter = Stats.getCounter("exceptions")
   private[this] val log = Logger.get
   private[this] val rand = new Random
@@ -65,7 +66,9 @@ extends Snowflake.Iface {
   }
 
   def get_worker_id(): Long = workerId
+
   def get_datacenter_id(): Long = datacenterId
+
   def get_timestamp() = System.currentTimeMillis
 
   protected[snowflake] def nextId(): Long = synchronized {
@@ -90,7 +93,7 @@ extends Snowflake.Iface {
     lastTimestamp = timestamp
     ((timestamp - twepoch) << timestampLeftShift) |
       (datacenterId << datacenterIdShift) |
-      (workerId << workerIdShift) | 
+      (workerId << workerIdShift) |
       sequence
   }
 

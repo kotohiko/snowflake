@@ -1,4 +1,4 @@
-/** Copyright 2010-2012 Twitter, Inc.*/
+/** Copyright 2010-2012 Twitter, Inc. */
 package com.twitter.service.snowflake
 
 import com.twitter.ostrich.admin.BackgroundProcess
@@ -18,17 +18,19 @@ import org.apache.thrift.transport.{TTransportException, TFramedTransport, TSock
 import org.apache.thrift.{TBase, TException, TFieldIdEnum, TSerializer, TDeserializer}
 import com.twitter.logging.Logger
 
-class Reporter(scribeCategory: String, scribeHost: String, scribePort: Int, 
-  scribeSocketTimeout: Int, flushQueueLimit: Int) {
+class Reporter(scribeCategory: String, scribeHost: String, scribePort: Int,
+               scribeSocketTimeout: Int, flushQueueLimit: Int) {
   private val log = Logger.get
-  val queue = new LinkedBlockingDeque[TBase[_,_]](flushQueueLimit)
-  private val structs = new ArrayList[TBase[_,_]](100)
+  val queue = new LinkedBlockingDeque[TBase[_, _]](flushQueueLimit)
+  private val structs = new ArrayList[TBase[_, _]](100)
   private val entries = new ArrayList[LogEntry](100)
   private var scribeClient: Option[Client] = None
   private val baos = new ByteArrayOutputStream
   private val protocol = (new TBinaryProtocol.Factory).getProtocol(new TIOStreamTransport(baos))
 
-  Stats.addGauge("reporter_flush_queue") { queue.size() }
+  Stats.addGauge("reporter_flush_queue") {
+    queue.size()
+  }
   val enqueueFailuresCounter = Stats.getCounter("scribe_enqueue_failures")
   val exceptionCounter = Stats.getCounter("exceptions")
 
@@ -48,16 +50,18 @@ class Reporter(scribeCategory: String, scribeHost: String, scribePort: Int,
           Thread.sleep(1000)
         }
       } catch {
-        case e: TTransportException =>  { handle_exception(e, structs) }
+        case e: TTransportException => {
+          handle_exception(e, structs)
+        }
       } finally {
         structs.clear
         entries.clear
       }
     }
 
-    private def handle_exception(e: Throwable, items: ArrayList[TBase[_,_]]) {
+    private def handle_exception(e: Throwable, items: ArrayList[TBase[_, _]]) {
       exceptionCounter.incr(1)
-      for(i <- items.size until 0) {
+      for (i <- items.size until 0) {
         val success = queue.offerFirst(items.get(i))
         if (!success) {
           log.error("unable to reenqueue item on failure")
@@ -71,7 +75,7 @@ class Reporter(scribeCategory: String, scribeHost: String, scribePort: Int,
     }
 
     private def connect {
-      while(scribeClient.isEmpty) {
+      while (scribeClient.isEmpty) {
         try {
           log.debug("connection to scribe at %s:%d with timeout %d".format(scribeHost, scribePort, scribeSocketTimeout))
           var sock = new TSocket(scribeHost, scribePort, scribeSocketTimeout)
@@ -89,7 +93,7 @@ class Reporter(scribeCategory: String, scribeHost: String, scribePort: Int,
       }
     }
 
-    private def serialize(struct: TBase[_,_]): String = {
+    private def serialize(struct: TBase[_, _]): String = {
       val b64 = new Base64(0)
       baos.reset
       struct.write(protocol)
@@ -98,7 +102,7 @@ class Reporter(scribeCategory: String, scribeHost: String, scribePort: Int,
   }
   thread.start
 
-  def report(struct: TBase[_,_]) {
+  def report(struct: TBase[_, _]) {
     try {
       val success = queue.offer(struct)
       if (!success) {
@@ -118,8 +122,8 @@ class Reporter(scribeCategory: String, scribeHost: String, scribePort: Int,
     log.error(e.getClass.getName + "\n" +
       e.getStackTrace.map { st =>
         import st._
-        "  "+getClassName+"."+getMethodName +
-        "("+getFileName+":"+getLineNumber+")"
+        "  " + getClassName + "." + getMethodName +
+          "(" + getFileName + ":" + getLineNumber + ")"
       }.mkString("\n")
     )
   }

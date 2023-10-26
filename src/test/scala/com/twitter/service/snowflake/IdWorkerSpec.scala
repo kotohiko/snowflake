@@ -6,9 +6,9 @@ import com.twitter.service.snowflake.gen.InvalidSystemClock
 import org.specs._
 
 class IdWorkerSpec extends SpecificationWithJUnit {
-  val workerMask     = 0x000000000001F000L
+  val workerMask = 0x000000000001F000L
   val datacenterMask = 0x00000000003E0000L
-  val timestampMask  = 0xFFFFFFFFFFC00000L
+  val timestampMask = 0xFFFFFFFFFFC00000L
 
   val reporter = new ReporterConfig {
     scribeCategory = "snowflake"
@@ -21,6 +21,7 @@ class IdWorkerSpec extends SpecificationWithJUnit {
   class EasyTimeWorker(workerId: Long, datacenterId: Long, reporter: Reporter)
     extends IdWorker(workerId, datacenterId, reporter) {
     var timeMaker = (() => System.currentTimeMillis)
+
     override def timeGen(): Long = {
       timeMaker()
     }
@@ -29,7 +30,8 @@ class IdWorkerSpec extends SpecificationWithJUnit {
   class WakingIdWorker(workerId: Long, datacenterId: Long, reporter: Reporter)
     extends EasyTimeWorker(workerId, datacenterId, reporter) {
     var slept = 0
-    override def tilNextMillis(lastTimestamp:Long): Long = {
+
+    override def tilNextMillis(lastTimestamp: Long): Long = {
       slept += 1
       super.tilNextMillis(lastTimestamp)
     }
@@ -91,7 +93,7 @@ class IdWorkerSpec extends SpecificationWithJUnit {
         val t = System.currentTimeMillis
         worker.timeMaker = (() => t)
         val id = worker.nextId
-        ((id & timestampMask) >> 22)  must be_==(t - worker.twepoch)
+        ((id & timestampMask) >> 22) must be_==(t - worker.twepoch)
       }
     }
 
@@ -100,8 +102,8 @@ class IdWorkerSpec extends SpecificationWithJUnit {
       val workerId = 4
       val datacenterId = 4
       val worker = new IdWorker(workerId, datacenterId, reporter)
-      val startSequence = 0xFFFFFF-20
-      val endSequence = 0xFFFFFF+20
+      val startSequence = 0xFFFFFF - 20
+      val endSequence = 0xFFFFFF + 20
       worker.sequence = startSequence
 
       for (i <- startSequence to endSequence) {
@@ -128,7 +130,7 @@ class IdWorkerSpec extends SpecificationWithJUnit {
         id
       }
       val t2 = System.currentTimeMillis
-      println("generated 1000000 ids in %d ms, or %,.0f ids/second".format(t2 - t, 1000000000.0/(t2-t)))
+      println("generated 1000000 ids in %d ms, or %,.0f ids/second".format(t2 - t, 1000000000.0 / (t2 - t)))
       1 must be_>(0)
     }
 
@@ -148,7 +150,7 @@ class IdWorkerSpec extends SpecificationWithJUnit {
       val worker = new IdWorker(31, 31, reporter)
       var set = new scala.collection.mutable.HashSet[Long]()
       val n = 2000000
-      (1 to n).foreach{i =>
+      (1 to n).foreach { i =>
         val id = worker.nextId
         if (set.contains(id)) {
           println(java.lang.Long.toString(id, 2))
@@ -171,13 +173,13 @@ class IdWorkerSpec extends SpecificationWithJUnit {
       // reported at https://github.com/twitter/snowflake/issues/6
       // first we generate 2 ids with the same time, so that we get the sequqence to 1
       worker.sequence must be_==(0)
-      worker.time     must be_==(1)
+      worker.time must be_==(1)
       val id1 = worker.nextId
       (id1 >> 22) must be_==(1)
       (id1 & sequenceMask) must be_==(0)
 
       worker.sequence must be_==(0)
-      worker.time     must be_==(1)
+      worker.time must be_==(1)
       val id2 = worker.nextId
       (id2 >> 22) must be_==(1)
       (id2 & sequenceMask) must be_==(1)
@@ -192,7 +194,7 @@ class IdWorkerSpec extends SpecificationWithJUnit {
       worker.time = 1
       val id3 = worker.nextId
       (id3 >> 22) must be_==(1)
-      (id3 & sequenceMask ) must be_==(2)
+      (id3 & sequenceMask) must be_==(2)
     }
 
     "increment the right stats" in {

@@ -14,18 +14,19 @@ import com.twitter.logging.Logger
 class ThriftClient[T](implicit man: Manifest[T]) {
   def newClient(protocol: TProtocol)(implicit m: Manifest[T]): T = {
     val constructor = m.erasure.
-    getConstructor(classOf[TProtocol])
+      getConstructor(classOf[TProtocol])
     constructor.newInstance(protocol).asInstanceOf[T]
   }
 
   val log = Logger.get //FIXME
+
   /**
    * @param soTimeoutMS the Socket timeout for both connect and read.
    */
   def create(hostname: String, port: Int, soTimeoutMS: Int): (TTransport, T) = {
     val socket = new TSocket(hostname, port, soTimeoutMS)
     val transport = new TFramedTransport(socket)
-    val protocol: TProtocol  = new TBinaryProtocol(transport)
+    val protocol: TProtocol = new TBinaryProtocol(transport)
 
     transport.open()
     log.debug("creating new TSocket: remote-host = %s remote-port = %d local-port = %d timeout = %d",

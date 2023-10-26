@@ -24,21 +24,21 @@ trait SnowflakeConfig extends ServerConfig[SnowflakeServer] {
     workerIdMap.mapValues(
       name => name.split(':')(0)
     ).find {
-      case(k,v) =>  v == host.getHostName.split(':')(0)
+      case (k, v) => v == host.getHostName.split(':')(0)
     }.get._1
   }
 
   def apply(runtime: RuntimeEnvironment) = {
     new SnowflakeServer(serverPort, datacenterId, workerIdFor(InetAddress.getLocalHost),
-        workerIdZkPath, skipSanityChecks, startupSleepMs, thriftServerThreads, reporterConfig(),
-        zookeeperClientConfig())
+      workerIdZkPath, skipSanityChecks, startupSleepMs, thriftServerThreads, reporterConfig(),
+      zookeeperClientConfig())
   }
 
   override def validate = {
     if (workerIdMap.values.size != workerIdMap.values.toSet.size)
       throw new RequiredValuesMissing("duplicate worker Ids")
     zookeeperClientConfig.validate
-    reporterConfig.validate 
+    reporterConfig.validate
     super.validate
   }
 }

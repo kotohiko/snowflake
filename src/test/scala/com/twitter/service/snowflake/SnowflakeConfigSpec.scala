@@ -23,7 +23,9 @@ class SnowflakeConfigSpec extends SpecificationWithJUnit {
         "/development.scala",
         "/development2.scala",
         "/test.scala"
-      ) map { TempFile.fromResourcePath(_) }
+      ) map {
+        TempFile.fromResourcePath(_)
+      }
 
       for (file <- configFiles) {
         println("validating " + file.getName)

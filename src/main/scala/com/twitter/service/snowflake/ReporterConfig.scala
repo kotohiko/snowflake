@@ -5,8 +5,8 @@ import com.twitter.util.Config
 trait ReporterConfig extends Config[Reporter] {
   var scribeCategory = "snowflake"
   var scribeHost = "localhost"
-  var scribePort =  1463
-  var scribeSocketTimeout =  5000
+  var scribePort = 1463
+  var scribeSocketTimeout = 5000
   var flushQueueLimit = 100000
 
   def apply = {
